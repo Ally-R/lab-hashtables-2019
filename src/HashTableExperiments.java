@@ -43,9 +43,19 @@ public class HashTableExperiments {
   /**
    * Explore what happens when we use set with a repeated key.
    */
-  public static void repeatedSetExpt(PrintWriter pen,
-      HashTable<String, String> htab) {
-    // STUB
+  public static void repeatedSetExpt(PrintWriter pen, HashTable<String, String> htab) {
+    htab.reportBasicCalls(true);
+    htab.set("alpha", "alpha");
+    htab.dump(pen);
+    htab.set("beta", "beta");
+    htab.dump(pen);
+    htab.set("bravo", "bravo");
+    htab.dump(pen);
+    htab.set("beta", "bingo");
+    htab.dump(pen);
+    htab.reportBasicCalls(false);
+    checkGet(pen, htab, "beta");
+    pen.println();
   } // repeatedSetExpt(PrintWriter, HashTable)
 
   /**

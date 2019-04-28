@@ -17,27 +17,24 @@ public class ChainedHashTable<K, V> implements HashTable<K, V> {
   // +-------+
 
   /*
-   * Our hash table is stored as an array of ArrayLists of key/value pairs.
-   * Because of the design of Java arrays, we declare that as type Object[]
-   * rather than ArrayList<Pair<K,V>>[] and cast whenever we extract an an
-   * element. (SamR needs to find a better way to deal with this issue; using
-   * ArrayLists doesn't seem like the best idea.)
+   * Our hash table is stored as an array of ArrayLists of key/value pairs. Because of the design of
+   * Java arrays, we declare that as type Object[] rather than ArrayList<Pair<K,V>>[] and cast
+   * whenever we extract an an element. (SamR needs to find a better way to deal with this issue;
+   * using ArrayLists doesn't seem like the best idea.)
    * 
-   * We use chaining to handle collisions. (Well, we *will* use chaining once
-   * the table is finished.)
+   * We use chaining to handle collisions. (Well, we *will* use chaining once the table is
+   * finished.)
    * 
-   * We expand the hash table when the load factor is greater than LOAD_FACTOR
-   * (see constants below).
+   * We expand the hash table when the load factor is greater than LOAD_FACTOR (see constants
+   * below).
    * 
-   * Since some combinations of data and hash function may lead to a situation
-   * in which we get a surprising relationship between values (e.g., all the
-   * hash values are 0 mod 32), when expanding the hash table, we incorporate a
-   * random number. (Is this likely to make a big difference? Who knows. But
-   * it's likely to be fun.)
+   * Since some combinations of data and hash function may lead to a situation in which we get a
+   * surprising relationship between values (e.g., all the hash values are 0 mod 32), when expanding
+   * the hash table, we incorporate a random number. (Is this likely to make a big difference? Who
+   * knows. But it's likely to be fun.)
    * 
-   * For experimentation and such, we allow the client to supply a Reporter that
-   * is used to report behind-the-scenes work, such as calls to expand the
-   * table.
+   * For experimentation and such, we allow the client to supply a Reporter that is used to report
+   * behind-the-scenes work, such as calls to expand the table.
    * 
    * Bugs to squash.
    * 
@@ -72,15 +69,14 @@ public class ChainedHashTable<K, V> implements HashTable<K, V> {
   // +--------+
 
   /**
-   * The number of values currently stored in the hash table. We use this to
-   * determine when to expand the hash table.
+   * The number of values currently stored in the hash table. We use this to determine when to
+   * expand the hash table.
    */
   int size = 0;
 
   /**
-   * The array that we use to store the ArrayList of key/value pairs. (We use an
-   * array, rather than an ArrayList, because we want to control expansion an
-   * ArrayLists of ArrayLists are just weird.)
+   * The array that we use to store the ArrayList of key/value pairs. (We use an array, rather than
+   * an ArrayList, because we want to control expansion an ArrayLists of ArrayLists are just weird.)
    */
   Object[] buckets;
 
@@ -95,8 +91,7 @@ public class ChainedHashTable<K, V> implements HashTable<K, V> {
   boolean REPORT_BASIC_CALLS = false;
 
   /**
-   * Our helpful random number generator, used primarily when expanding the size
-   * of the table..
+   * Our helpful random number generator, used primarily when expanding the size of the table..
    */
   Random rand;
 
@@ -130,7 +125,7 @@ public class ChainedHashTable<K, V> implements HashTable<K, V> {
    */
   @Override
   public boolean containsKey(K key) {
-    // STUB/HACK
+    // TODO STUB/HACK
     try {
       get(key);
       return true;
@@ -162,12 +157,19 @@ public class ChainedHashTable<K, V> implements HashTable<K, V> {
       } // if reporter != null
       throw new IndexOutOfBoundsException("Invalid key: " + key);
     } else {
-      Pair<K, V> pair = alist.get(0);
-      if (REPORT_BASIC_CALLS && (reporter != null)) {
-        reporter.report("get(" + key + ") => " + pair.value());
-      } // if reporter != null
-      return pair.value();
-    } // get
+      int i = 0;
+      while (i < (alist.size() - 1) && (alist.get(i).key() != key)) {
+        if (REPORT_BASIC_CALLS && (reporter != null)) {
+          reporter.report("get(" + key + ") => " + alist.get(i).value());
+        } // if reporter != null
+        i++;
+      } // if
+      Pair<K, V> pair = alist.get(i);
+      if (pair.key() == key) {
+        return pair.value();
+      } // if correct key
+    } // else
+    throw new IndexOutOfBoundsException("Invalid key: " + key);
   } // get(K)
 
   /**
@@ -182,7 +184,7 @@ public class ChainedHashTable<K, V> implements HashTable<K, V> {
    */
   @Override
   public V remove(K key) {
-    // STUB
+    // TODO STUB
     return null;
   } // remove(K)
 
@@ -204,9 +206,21 @@ public class ChainedHashTable<K, V> implements HashTable<K, V> {
     if (alist == null) {
       alist = new ArrayList<Pair<K, V>>();
       this.buckets[index] = alist;
-    }
-    alist.add(new Pair<K, V>(key, value));
-    ++this.size;
+      alist.add(new Pair<K, V>(key, value));
+      ++this.size;
+    } // if buckets null
+    
+    // Find the key, or add it to bucket if not present
+    int i = 0;
+    while (i < alist.size() - 1 && alist.get(i).key() != key) {
+      i++;
+    } // while
+    if (alist.get(i).key() == key) {
+      alist.set(i, new Pair<K, V>(key, value));
+    } else {
+      alist.add(new Pair<K, V>(key, value));
+      ++this.size;
+    } // if/else
 
     // Report activity, if appropriate
     if (REPORT_BASIC_CALLS && (reporter != null)) {
@@ -242,12 +256,12 @@ public class ChainedHashTable<K, V> implements HashTable<K, V> {
   public Iterator<Pair<K, V>> iterator() {
     return new Iterator<Pair<K, V>>() {
       public boolean hasNext() {
-        // STUB
+        // TODO STUB
         return false;
       } // hasNext()
 
       public Pair<K, V> next() {
-        // STUB
+        // TODO STUB
         return null;
       } // next()
     }; // new Iterator
@@ -277,8 +291,8 @@ public class ChainedHashTable<K, V> implements HashTable<K, V> {
       ArrayList<Pair<K, V>> alist = (ArrayList<Pair<K, V>>) this.buckets[i];
       if (alist != null) {
         for (Pair<K, V> pair : alist) {
-          pen.println("  " + i + ": <" + pair.key() + "(" + pair.key().hashCode()
-              + "):" + pair.value() + ">");
+          pen.println("  " + i + ": <" + pair.key() + "(" + pair.key().hashCode() + "):"
+              + pair.value() + ">");
         } // for each pair in the bucket
       } // if the current bucket is not null
     } // for each bucket
@@ -308,12 +322,12 @@ public class ChainedHashTable<K, V> implements HashTable<K, V> {
     if (REPORT_BASIC_CALLS && (reporter != null)) {
       reporter.report("Expanding to " + newSize + " elements.");
     } // if reporter != null
-    // STUB
+    // TODO STUB
   } // expand()
 
   /**
-   * Find the index of the entry with a given key. If there is no such entry,
-   * return the index of an entry we can use to store that key.
+   * Find the index of the entry with a given key. If there is no such entry, return the index of an
+   * entry we can use to store that key.
    */
   int find(K key) {
     return Math.abs(key.hashCode()) % this.buckets.length;
